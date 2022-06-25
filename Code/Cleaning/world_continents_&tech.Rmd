@@ -1,0 +1,62 @@
+---
+title: "Assessing the Impacts of Economic Factors on Funding for Tech Startups"
+author: "Nana Adjoa Ansah, Parunjodhi Munisamy, Michel Ruiz-Fuentes"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r loading-packages}
+#loading in packages
+
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(rio)
+library(ggpubr)
+library(moderndive)
+library(car)
+library(stargazer)
+library(vtable)
+```
+
+# Hypothesis
+
+1) We expect that when the GDP per capita of the country the startup is based in increases, so does the funding amount.     
+   2) We expect that the GDP per capita of the country the startup is based in and funding amount will increase significantly if the startup is in the Series C funding stage. 
+
+```{r loading-data}
+#loading in the datasets 
+
+tech_data <- import("tech_fundings.csv")
+world_data <- import("world_data_filtered.csv")
+continent_data <- import("continents.csv")
+```
+
+
+```{r wrangling-and-cleaning-data}
+#merging the world statistics and tech funding datasets, and grouping companies by continents
+world_data$Country <- world_data$`Country Name`
+
+world_data <- world_data %>%
+  full_join(continent_data) %>%
+  mutate(Region = `Country Name`) 
+  
+research_data <- tech_data %>%
+  full_join(world_data, by = "Region") %>%
+  mutate(continent_f = ifelse(Country == "United States", "North America", Continent)) %>%
+  filter(!is.na(`GDP per capita (current US$)`)) %>%
+  filter(!is.na(`Population, total`)) %>%
+  filter(!is.na(index)) %>%
+  filter(!is.na(`Funding Amount (USD)`)) %>%
+  select(!`Country Name`) %>%
+  select(!Continent) %>%
+  drop_na()
+```
+

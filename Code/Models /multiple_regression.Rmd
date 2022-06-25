@@ -1,0 +1,127 @@
+---
+title: "Assessing the Impacts of Economic Factors on Funding for Tech Startups"
+author: "Nana Adjoa Ansah, Parunjodhi Munisamy, Michel Ruiz-Fuentes"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r loading-packages}
+#loading in packages
+
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(rio)
+library(ggpubr)
+library(moderndive)
+library(car)
+library(stargazer)
+library(vtable)
+```
+
+#Using the backward selection approach to estimate models
+```{r}
+# Population as a continuous variable in terms of 10,000 people
+research_data$population <- as.numeric(as.character(research_data$`Population, total`)) / 10000
+
+# Making vertical a binary indicator
+research_data <- research_data %>%
+  mutate(is_b2b = ifelse(Vertical == "B2B Software", "B2B Software", "Not B2B Software"))
+```
+
+```{r}
+### Model 1 -- Parallel slopes model
+mod_1 <- lm(funding_amt_log~gdp_per_capita+is_b2b+population+is_series_c+continent_f, data = research_data)
+```
+
+```{r}
+#Assessing multicollinearity
+
+vif(mod_1)
+```
+
+```{r}
+### Model 2 -- Interaction model
+mod_2 <- lm(funding_amt_log~gdp_per_capita+gdp_per_capita*is_series_c+is_b2b+population+is_series_c+continent_f, data = research_data)
+```
+
+From  VIF test results, the independent variable that looks at what continent the company is located in still has a GVIF above 5, indicating multicollinearity. We construct another model similar to the parallel slopes model one but excluding the continent variable.\
+
+```{r}
+### Model 3 -- Parallel slopes model (subset) that excludes the variable continent
+mod_3 <- lm(funding_amt_log~gdp_per_capita+is_b2b+population+is_series_c, data = research_data)
+```
+
+```{r}
+#Assessing multicollinearity
+
+vif(mod_3)
+```
+
+After not including which continent the company is based in, the GVIF values in our subset parallel slopes model are all below 5, indicating none to little multicollinearity.\
+
+To find the model that best fits our data, we look at the lowest BIC and AIC values as well as the highest adjusted R^2^ values. To choose between model 1 and model 3, we conduct an anova test since we have conflicting AIC and BIC values.
+
+```{r}
+#Using AIC and BIC values to find the best model that fits the data
+
+mod_1$AIC <- AIC(mod_1)
+mod_2$AIC <- AIC(mod_2)
+mod_3$AIC <- AIC(mod_3)
+
+mod_1$BIC <- BIC(mod_1)
+mod_2$BIC <- BIC(mod_2)
+mod_3$BIC <- BIC(mod_3)
+```
+
+```{r, results='asis'}
+##Combining multiple models into a single table
+stargazer(mod_2, mod_3, mod_1, type="latex", header=FALSE,
+         title="Predicting Funding Amount received by a Tech Company",
+         covariate.labels=c("GDP per Capita (USD, in thousands)", "Company in Series C", "Company not a B2B software", "Total population (in ten thousands)", "Company in Asia", "Company in Europe", "Company in North Africa", "Company in Oceania", "Company in South America", "Interaction term - Series C X GDP per capita"),
+         dep.var.labels = "Log of Funding Amount (USD)",
+         keep.stat=c("aic", "bic", "adj.rsq", "n"))
+```
+
+```{r}
+anova(mod_2, mod_1)
+```
+
+The p-value is greater than our default significance level which is 0.05. Therefore it is not statistically significant.\
+
+#Assessing Conditions for Multiple Regression
+##Linearity
+```{r}
+resid_data <- augment(mod_2)
+
+ggplot(resid_data, aes(x=.fitted, y=.resid)) +
+  geom_point() + 
+  labs(
+    x = "Fitted values",
+    y = "Residuals",
+    title = "Residual plot"
+  )
+```
+
+From the residual plot given, the data points are scattered symmetrically above the 0 horizontal line. Therefore we can assume that the condition for linearity is satisfied.
+
+## Homoskedasticity
+```{r}
+plot(mod_2, which = 5)
+```
+
+The data points are concentrated in a larger cloud on the left side. Therefore, we can assume that the condition for homoskedasticity is not satisfied.
+
+## Normal distribution of residuals
+```{r}
+plot(mod_2, which=2,  id.n = NULL)
+```
+
+The data points trail off at the beginning and at the end of the graph and thus it can be assumed that the condition for normal distribution of residuals is not satisfied.

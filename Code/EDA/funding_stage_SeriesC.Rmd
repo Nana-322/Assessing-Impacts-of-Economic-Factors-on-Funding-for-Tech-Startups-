@@ -1,0 +1,37 @@
+---
+title: "Assessing the Impacts of Economic Factors on Funding for Tech Startups"
+author: "Nana Adjoa Ansah, Parunjodhi Munisamy, Michel Ruiz-Fuentes"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r loading-packages}
+#loading in packages
+
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(rio)
+library(ggpubr)
+library(moderndive)
+library(car)
+library(stargazer)
+library(vtable)
+```
+
+3) This is a binary indicator of whether the tech company is in the funding stage Series C or not.
+
+```{r independent-variable-2}
+#Making funding stage a binary indicator
+#Grouping companies by their funding stages -> Series C or not
+
+research_data <- research_data %>%
+  mutate(is_series_c = ifelse(`Funding Stage` == "Series C", "Series C", "Not Series C"))
+```

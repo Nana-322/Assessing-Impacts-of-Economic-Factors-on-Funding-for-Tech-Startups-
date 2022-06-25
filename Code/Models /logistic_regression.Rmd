@@ -1,0 +1,54 @@
+---
+title: "Assessing the Impacts of Economic Factors on Funding for Tech Startups"
+author: "Nana Adjoa Ansah, Parunjodhi Munisamy, Michel Ruiz-Fuentes"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r loading-packages}
+#loading in packages
+
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(rio)
+library(ggpubr)
+library(moderndive)
+library(car)
+library(stargazer)
+library(vtable)
+```
+
+
+#Logistic Regression model
+```{r, fig6, fig.height = 5, fig.width = 7, fig.align = "center"}
+# Predict Probability Approach
+new_data_1 <- with(research_data, data.frame(population = mean(population), is_b2b = "B2B Software", is_series_c = "Not Series C", continent_f = "North America", gdp_per_capita=seq(0, 115, by = 5)))
+
+new_data_2 <- with(research_data, data.frame(population = mean(population), is_b2b = "B2B Software", is_series_c = "Series C", continent_f = "North America", gdp_per_capita=seq(0, 115, by = 5)))
+
+new_data <- rbind(new_data_1, new_data_2)
+
+pred <- as.data.frame(predict(mod_1, new_data, type = "response", se.fit = TRUE))
+
+new_data$pred_prob <- pred$fit
+new_data$pred_lower <- pred$fit-(1.96*pred$se.fit)
+new_data$pred_upper <- pred$fit+(1.96*pred$se.fit)
+
+ggplot(new_data, aes(x=gdp_per_capita, y=pred_prob, color = is_series_c))+
+geom_ribbon(aes(ymin = pred_lower, ymax = pred_upper), fill = "grey70")+
+  geom_line() + 
+  labs(
+    x = "GDP per Capita (USD, in thousands)",
+    y = "Predicted Funding amount (USD)",
+    title = "Predicted Funding amount (USD)"
+  ) + 
+  scale_color_discrete(name = "Is Series C or not")
+```

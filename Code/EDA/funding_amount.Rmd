@@ -1,0 +1,119 @@
+---
+title: "Assessing the Impacts of Economic Factors on Funding for Tech Startups"
+author: "Nana Adjoa Ansah, Parunjodhi Munisamy, Michel Ruiz-Fuentes"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r loading-packages}
+#loading in packages
+
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(rio)
+library(ggpubr)
+library(moderndive)
+library(car)
+library(stargazer)
+library(vtable)
+```
+
+#Funding amount as a dependent variable
+
+1) Funding amount which is our dependent variable with unit USD. It is a continuous variable. When plotting a histogram of this parameter, the distribution is found to be very right skewed.\
+
+```{r dependent-variable, results = FALSE}
+#transforming funding amount from a discrete variable into a continuous variable
+
+research_data$`funding_amount` <- as.numeric(as.character(research_data$`Funding Amount (USD)`))
+```
+
+
+```{r dependent-variable, fig2, fig.height = 4, fig.width = 6, fig.align = "center"}
+#Plotting a histogram of funding amount
+research_data %>%
+  ggplot(aes(x = funding_amount)) +
+  geom_histogram() + 
+  labs(
+    title = "Distribution of Funding Amount",
+    subtitle = "Containing all Funding Stages",
+    x = "Funding Amount (in USD)",
+    y = "Count"
+  ) +
+  scale_x_continuous(labels = scales::dollar)
+```
+
+The highest funding amounts are private equity and unknown and skew our distribution significantly. Since private equity is not a funding stage and the unknowns do not bring insights, we can remove these two funding stages from our data without creating bias. This reduces the skewness of the distribution.\
+
+```{r, fig3, fig.height = 4, fig.width = 6, fig.align = "center"}
+#Reducing the skewness of the distribution by omitting the 'unknown' and 'private equity' variables
+
+research_data <- research_data %>%
+  filter(!`Funding Stage` == "Unknown") %>%
+  filter(!`Funding Stage` == "Private Equity") 
+
+research_data %>%
+  ggplot(aes(x = funding_amount)) +
+  geom_histogram() + 
+  labs(
+    title = "Distribution of Funding Amount",
+    subtitle = "Removing Private Equity and Unknown",
+    x = "Funding Amount (in USD)",
+    y = "Count"
+  ) +
+  scale_x_continuous(labels = scales::dollar)
+```
+
+The data is still skewed so we will transform funding amount values in an attempt to have a uniform distribution using two approaches: standardization and log transformation.\
+
+##Transforming the variable funding amount for a uniform distribution
+```{r standardized-dv}
+#standardization of the funding amount variable
+
+research_data$funding_amt_std <- scale(research_data$funding_amount, center = T, scale = T)
+```
+
+```{r log-dv}
+#log transformation of the funding amount variable
+
+research_data$funding_amt_log <- log(research_data$funding_amount)
+```
+
+```{r, fig4, fig.height = 4, fig.width = 6, fig.align = "center"}
+#plotting a histogram of the standardized variable funding amount
+std_funding_amt <- research_data %>%
+  ggplot(aes(x = funding_amt_std)) +
+  geom_histogram() + 
+  labs(
+    title = "Distribution of Standardized \nFunding Amount",
+    x = "Standardized Funding Amount",
+    y = "Count"
+  )
+```
+
+```{r, fig5, fig.height = 4, fig.width = 6, fig.align = "center"}
+#plotting a histogram of the log transformed variable funding amount
+log_funding_amt <- research_data %>%
+  ggplot(aes(x = funding_amt_log)) +
+  geom_histogram() + 
+  labs(
+    title = "Distribution of Log of Funding \nAmount",
+    x = "Log of Funding Amount",
+    y = "Count"
+  )
+```
+
+```{r log-std-dv, fig5, fig6, fig.height = 4, fig.width = 6, fig.align = "center"}
+ggarrange(std_funding_amt, log_funding_amt,
+          ncol = 2)
+```
+
+Looking at the transformation plots above, there is a more uniform distribution for funding amount in the log transformation with less of a skew and more linearity.

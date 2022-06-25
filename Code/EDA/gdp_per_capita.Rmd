@@ -1,0 +1,38 @@
+---
+title: "Assessing the Impacts of Economic Factors on Funding for Tech Startups"
+author: "Nana Adjoa Ansah, Parunjodhi Munisamy, Michel Ruiz-Fuentes"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+```{r loading-packages}
+#loading in packages
+
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(rio)
+library(ggpubr)
+library(moderndive)
+library(car)
+library(stargazer)
+library(vtable)
+```
+
+#gdp per capita as an independent variable
+
+This is an independent continuous variable in terms of USD. To make this variable more interpretable, we are going to divide it by 1,000 and change the units to USD (in thousands)\
+
+  When plotting a histogram of this variable, the distribution is continuous to a certain extent with significant modes.\
+```{r independent-variable-1}
+#transforming gdp percapita from a discrete variable into a continuous variable
+
+research_data$gdp_per_capita <- as.numeric(as.character(research_data$`GDP per capita (current US$)`)) / 1000
+```
