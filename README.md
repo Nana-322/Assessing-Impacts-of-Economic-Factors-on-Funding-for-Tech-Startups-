@@ -24,7 +24,7 @@ To test our hypotheses, we explored two main multiple regression models - a para
 ## Conclusion
 From our analysis, there is more evidence to support the hypothesis that there is a significant association between the positive linear relationship between the GDP per capita of the country the company is based in and the funding amount for a company regardless of whether the company is Series C or not. We find that on average,for every $1000 increase in GDP per capita, a tech startup receives a 0.5% increase in funding amount from investors, especially if they are in the Series C funding stage. Moreover, companies in the Series C funding stage receive more funding than those which are not. The models generated however don’t provide much practical significance since they explain only 14% of the variation in the funding amount received by tech companies.
 
-![Alt text](https://github.com/Nana-322/Assessing-Impacts-of-Economic-Factors-on-Funding-for-Tech-Startups-/blob/master/Viz/fundn_amt%20%26%20gdp.png "Figure 2:"Predicted funding amounts with gdp per capita and by funding stage")
+![Alt text](https://github.com/Nana-322/Assessing-Impacts-of-Economic-Factors-on-Funding-for-Tech-Startups-/blob/master/Viz/fundn_amt%20%26%20gdp.png "Figure 2:Predicted funding amounts with gdp per capita and by funding stage")
 
 ## Future Work
 This research has important implications in terms of identifying what are the possible variables that might help determine the funding amount of a tech company. We have already emphasized on GDP per capita of the country the tech company is based in as well as whether the company is in Series C or not. Further research can put emphasis on which vertical (category) the tech company is in or even the region the company is based in.
